@@ -13,7 +13,7 @@ const fruits = ["apple.png", "banana.png","watermelon.png","mango.png", "bomb.pn
 function createFruit() {
   const fruit = document.createElement("img");
   const fruitType = fruits[Math.floor(Math.random() * fruits.length)];
-  fruit.src = "images/" + fruitType;
+  fruit.src = fruitType;
   fruit.className = "fruit";
   fruit.style.left = Math.random() * (window.innerWidth - 60) + "px";
   fruit.style.top = "-60px";
