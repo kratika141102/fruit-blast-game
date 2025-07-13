@@ -1,71 +1,81 @@
-const gameArea = document.getElementById("gameArea");
-const scoreDisplay = document.getElementById("score");
 let score = 0;
+let isGameOver = false;
+const fruitTypes = ["apple.png", "banana.png", "mango.png"];
+const bombImage = "bomb.png";
 
-// 🔊 Load sounds
-const cutSound = new Audio("knife.mp3");
+const cutSound = new Audio("cut.mp3");
 const bombSound = new Audio("bomb.mp3");
 
-// 🍎 Fruit list
-const fruits = ["apple.png", "banana.png","watermelon.png","mango.png", "bomb.png"];
-
-// 🍌 Create fruit
 function createFruit() {
+  if (isGameOver) return;
+
   const fruit = document.createElement("img");
-  const fruitType = fruits[Math.floor(Math.random() * fruits.length)];
+  fruit.classList.add("fruit");
+
+  let fruitType;
+  if (Math.random() < 0.2) {
+    fruitType = bombImage;
+  } else {
+    fruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+  }
+
   fruit.src = fruitType;
-  fruit.className = "fruit";
-  fruit.style.left = Math.random() * (window.innerWidth - 60) + "px";
-  fruit.style.top = "-60px";
+  fruit.style.left = Math.random() * 90 + "vw";
+  fruit.style.top = "-100px";
 
-  fruit.dataset.type = fruitType; // 🍌 or 💣
+  document.getElementById("gameContainer").appendChild(fruit);
 
-  gameArea.appendChild(fruit);
+  let fallInterval = setInterval(() => {
+    if (isGameOver) {
+      clearInterval(fallInterval);
+      fruit.remove();
+      return;
+    }
 
-  setTimeout(() => {
-    fruit.style.top = "500px";
-  }, 100);
+    const top = parseInt(fruit.style.top);
+    if (top >= window.innerHeight) {
+      fruit.remove();
+      clearInterval(fallInterval);
+    } else {
+      fruit.style.top = top + 5 + "px";
+    }
+  }, 30);
 
-  setTimeout(() => {
-    if (document.body.contains(fruit)) fruit.remove();
-  }, 4000);
+  fruit.onclick = function () {
+    if (fruitType === bombImage) {
+      bombSound.play();
+      endGame();
+    } else {
+      cutSound.play();
+      fruit.remove();
+      score++;
+      document.getElementById("score").textContent = score;
+    }
+  };
 }
 
-// ✋ Touch swipe detection
-gameArea.addEventListener("touchmove", function (e) {
-  const touch = e.touches[0];
-  const x = touch.clientX;
-  const y = touch.clientY;
+function gameLoop() {
+  if (!isGameOver) {
+    createFruit();
+  }
+}
+setInterval(gameLoop, 1000);
 
+function endGame() {
+  isGameOver = true;
+
+  // Remove all falling fruits
   const fruits = document.querySelectorAll(".fruit");
-  fruits.forEach(fruit => {
-    const rect = fruit.getBoundingClientRect();
+  fruits.forEach(fruit => fruit.remove());
 
-    if (
-      x > rect.left &&
-      x < rect.right &&
-      y > rect.top &&
-      y < rect.bottom &&
-      !fruit.classList.contains("cut")
-    ) {
-      // ✅ Add cut animation
-      fruit.classList.add("cut");
+  // Show Game Over Screen
+  document.getElementById("finalScore").textContent = score;
+  document.getElementById("gameOverScreen").style.display = "block";
+}
 
-      if (fruit.dataset.type.includes("bomb")) {
-        // 💣 Bomb logic
-        bombSound.play();
-        score = Math.max(0, score - 5);
-      } else {
-        // 🍎 Fruit logic
-        cutSound.play();
-        score += 1;
-      }
-
-      scoreDisplay.textContent = "Score: " + score;
-      setTimeout(() => fruit.remove(), 300);
-    }
-  });
-});
-
-// 🎮 Drop fruits every second
-setInterval(createFruit, 1000);
+function restartGame() {
+  isGameOver = false;
+  score = 0;
+  document.getElementById("score").textContent = score;
+  document.getElementById("gameOverScreen").style.display = "none";
+}
