@@ -13,10 +13,12 @@ function createFruit() {
   fruit.classList.add("fruit");
 
   let fruitType;
-  if (Math.random() < 0.2) {
-    fruitType = bombImage;
-  } else {
+
+  // Don't show bomb at start of game
+  if (score === 0) {
     fruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+  } else {
+    fruitType = Math.random() < 0.2 ? bombImage : fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
   }
 
   fruit.src = fruitType;
@@ -64,11 +66,9 @@ setInterval(gameLoop, 1000);
 function endGame() {
   isGameOver = true;
 
-  // Remove all falling fruits
   const fruits = document.querySelectorAll(".fruit");
   fruits.forEach(fruit => fruit.remove());
 
-  // Show Game Over Screen
   document.getElementById("finalScore").textContent = score;
   document.getElementById("gameOverScreen").style.display = "block";
 }
